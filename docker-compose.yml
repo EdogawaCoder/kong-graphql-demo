@@ -1,0 +1,36 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: userdb
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: pass
+    volumes:
+      - mongo_data:/data/db
+
+  mongo-express:
+    image: mongo-express:1
+    ports:
+      - "8085:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: user
+      ME_CONFIG_MONGODB_ADMINPASSWORD: pass
+      ME_CONFIG_MONGODB_URL: mongodb://root:root@mongo:27017/
+
+  kong:
+    image: kong:3.6
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /opt/kong/kong.yaml
+      KONG_PROXY_LISTEN: "0.0.0.0:8000"
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001"
+    volumes:
+      - ./kong/kong.yaml:/opt/kong/kong.yaml:ro
+    ports:
+      - "8000:8000"   # proxy
+      - "8001:8001"   # admin
+
+volumes:
+  mongo_data:
