@@ -19,7 +19,7 @@ public class UserSequenceGeneratorService {
 	}
 	
 	public long nextValue(String sequenceName) {
-		var query =  new Query(Criteria.where("id").is(sequenceName));
+		var query =  new Query(Criteria.where("_id").is(sequenceName));
 		var update = new Update().inc("seq", 1);
 		
 		var counter = mongoOperations.findAndModify(
