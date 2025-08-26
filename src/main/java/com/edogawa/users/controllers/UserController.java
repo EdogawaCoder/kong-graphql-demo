@@ -17,43 +17,41 @@ import com.edogawa.users.entities.User;
 import com.edogawa.users.exceptions.UserNotFoundException;
 import com.edogawa.users.services.UserService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping(value = "/api/v1/users", produces = "application/json")
+@RequiredArgsConstructor
 public class UserController {
 
 	private final UserService service;
+	private final UserMapper mapper;
 	
-	public UserController(UserService service) {
-		this.service = service;
-	}
 	
 	@PostMapping(consumes = "application/json")
-	public ResponseEntity<UserResponseDto> createUser(@RequestBody UserCreateDto body){
-		
-		User saved = service.create(UserMapper.toEntity(body));
-		
-		var dto =UserMapper.toResponse(saved);
-		
-		return ResponseEntity.
-				created(URI.create("/api/v1/users/" + dto.id()))
-				.body(dto);
-		}
-	
-	@GetMapping
-	public List<UserResponseDto> findAllUsers() {
-		return service.findAll()
-				.stream()
-				.map(UserMapper::toResponse)
-				.toList();
+	public ResponseEntity<UserResponseDto> createUser(@RequestBody UserCreateDto body) {
+
+		User saved = service.create(mapper.toEntity(body));
+
+		var dto = mapper.toResponse(saved);
+
+		return ResponseEntity.created(URI.create("/api/v1/users/" + dto.id())).body(dto);
 	}
-	
-	
+
+	@GetMapping
+	public ResponseEntity<List<UserResponseDto>> findAllUsers() {
+		return ResponseEntity.ok(service.findAll()
+				.stream()
+				.map(mapper::toResponse)
+				.toList());
+	}
+
 	@GetMapping("/{id}")
 	public UserResponseDto findUserById(Long id) {
 		User user = service.findById(id);
 		if (user == null) {
 			throw new UserNotFoundException(id);
 		}
-		return UserMapper.toResponse(user);
+		return mapper.toResponse(user);
 	}
 }
